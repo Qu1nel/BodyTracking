@@ -4,13 +4,9 @@ from typing import Tuple, Union, Mapping, List, Optional
 import cv2
 import numpy as np
 
-_RGB_CHANNELS = 3
+from .colors import *
 
-WHITE = (224, 224, 224)
-BLACK = (0, 0, 0)
-RED = (0, 0, 255)
-GREEN = (0, 255, 0)
-BLUE = (255, 0, 0)
+_RGB_CHANNELS = 3
 
 __all__ = (
     'DrawingSpec',
