@@ -72,12 +72,44 @@ def draw_fill_circle(image: ndarray,
     cv2.circle(image, center, radius, color, -1)
 
 
-def draw_rect():
-    pass
+def draw_rect(image: ndarray,
+              point1: Union[Landmark, Union[List[int], Tuple[int]]],
+              point2: Union[Landmark, Union[List[int], Tuple[int]]],
+              color: Union[Tuple[int], List[int]] = RED,
+              thickness: Union[None, int] = None) -> None:
+    """
+    Draws a rectangle.
+
+    The function cv::rectangle draws a rectangle outline whose two opposite corners
+    .   are point1 and point2.
+
+    :param image: Image.
+    :param point1: Landmark object or sequence with two coord statement.
+    :param point2: Landmark object or sequence with two coord statement.
+    :param color: The sequence contains a three values. RGB.
+    :param thickness: Int. Rectangle thickness value.
+    :return: None
+    """
+    cv2.rectangle(image, point1, point2, color, thickness)
 
 
-def draw_fill_rect():
-    pass
+def draw_fill_rect(image: ndarray,
+                   point1: Union[Landmark, Union[List[int], Tuple[int]]],
+                   point2: Union[Landmark, Union[List[int], Tuple[int]]],
+                   color: Union[Tuple[int], List[int]] = RED) -> None:
+    """
+    Draws a filled rectangle.
+
+    The function cv::rectangle draws a filled rectangle outline whose two opposite corners
+    .   are point1 and point2.
+
+    :param image: Image.
+    :param point1: Landmark object or sequence with two coord statement.
+    :param point2: Landmark object or sequence with two coord statement.
+    :param color: The sequence contains a three values. RGB.
+    :return: None
+    """
+    cv2.rectangle(image, point1, point2, color, -1)
 
 
 def draw_text():
