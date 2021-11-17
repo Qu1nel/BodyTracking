@@ -1,1 +1,1 @@
-from .HandConnections import *
+from . import HandConnections

@@ -34,7 +34,10 @@ def draw_landmarks(
         connections: Optional[List[Tuple[int, int]]] = None,
         landmark_drawing_spec: Union[DrawingSpec, Mapping[int, DrawingSpec]] = DrawingSpec(color=RED, thickness=2),
         connection_drawing_spec: Union[DrawingSpec, Mapping[Tuple[int, int], DrawingSpec]] = DrawingSpec(color=GREEN),
-        ignore_landmark: Union[List[int], Tuple[int]] = tuple()):
+        ignore_landmark: Union[List[int], Tuple[int]] = tuple(),
+        *,
+        smart_drawing: bool = False
+):
     """Draws the landmarks and the connections on the image.
 
     Args:
@@ -52,7 +55,9 @@ def draw_landmarks(
         connections' drawing settings such as color and line thickness.
         If this argument is explicitly set to None, no landmark connections will
         be drawn.
-      ignore_landmark: A sequence of landmarks that will be skipped during drawing
+      ignore_landmark: A sequence of landmarks that will be skipped during drawing.
+      smart_drawing: A flag that meaning drawing only those landmarks that are in the
+        sequence connections.
 
     Raises:
       ValueError: If one of the followings:
@@ -87,6 +92,9 @@ def draw_landmarks(
                          drawing_spec.color, drawing_spec.thickness)
 
     if landmark_drawing_spec:
+        if smart_drawing:
+            ignore_landmark = [idx for idx in range(0, num_landmarks) if idx not in sum(connections, ())]
+
         for idx, landmark_px in idx_to_coordinates.items():
             if idx in ignore_landmark:
                 continue

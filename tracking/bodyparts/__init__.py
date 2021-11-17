@@ -1,1 +1,1 @@
-from .HandTracking import *
+from . import HandTracking

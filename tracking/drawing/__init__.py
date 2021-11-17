@@ -1,1 +1,1 @@
-from .DrawingUtils import *
+from . import DrawingUtils
