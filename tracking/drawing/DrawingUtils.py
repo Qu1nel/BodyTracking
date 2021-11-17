@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 
 from .colors import *
+from ..bodyparts.base_solution import BaseSolution, _normalize_to_pixel_coordinates
 
 _RGB_CHANNELS = 3
 
@@ -101,3 +102,41 @@ def draw_landmarks(
                 drawing_spec = landmark_drawing_spec
 
             cv2.circle(image, landmark_px, drawing_spec.circle_radius, drawing_spec.color, drawing_spec.thickness)
+
+
+def draw_detection(
+        image: np.ndarray,
+        detection: BaseSolution,
+        landmark_drawing_spec: DrawingSpec = DrawingSpec(color=RED, circle_radius=2, thickness=-1),
+        bbox_drawing_spec: DrawingSpec = DrawingSpec(color=RED)):
+    """Draws the detection bounding box and landmarks on the image.
+
+    Args:
+      image: A three channel RGB image represented as numpy ndarray.
+      detection: A detection proto message to be annotated on the image.
+      landmark_drawing_spec: A DrawingSpec object that specifies the landmarks'
+        drawing settings such as color, line thickness, and circle radius.
+      bbox_drawing_spec: A DrawingSpec object that specifies the bounding box's
+        drawing settings such as color and line thickness.
+
+    Raises:
+      ValueError: If the input image is not three channel RGB.
+    """
+    if image.shape[2] != _RGB_CHANNELS:
+        raise ValueError('Input image must contain three channel rgb data.')
+
+    image_rows, image_cols, _ = image.shape
+    for landmark in detection.landmarks.values():
+        cv2.circle(image, landmark, landmark_drawing_spec.circle_radius,
+                   landmark_drawing_spec.color, landmark_drawing_spec.thickness)
+
+    # Draws bounding box if exists.
+    box = detection.relative_bounding_box
+    rect_start_point = _normalize_to_pixel_coordinates(
+        box['xmin'], box['ymin'], image_cols, image_rows
+    )
+    rect_end_point = _normalize_to_pixel_coordinates(
+        box['xmin'] + box['width'], box['ymin'] + box['height'], image_cols, image_rows
+    )
+
+    cv2.rectangle(image, rect_start_point, rect_end_point, bbox_drawing_spec.color, bbox_drawing_spec.thickness)
