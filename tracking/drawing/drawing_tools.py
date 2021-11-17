@@ -112,5 +112,26 @@ def draw_fill_rect(image: ndarray,
     cv2.rectangle(image, point1, point2, color, -1)
 
 
-def draw_text():
-    pass
+def draw_text(image: ndarray,
+              text: str,
+              org: Union[List[int], Tuple[int]],
+              fontFace: int, fontScale: int,
+              color: Union[Tuple[int], List[int]] = PURPLE,
+              thickness: Union[None, int] = None) -> None:
+    """
+    Draws a text string.
+
+    The function cv::putText renders the specified text string in the image. Symbols that cannot be rendered
+    .   using the specified font are replaced by question marks.
+
+    :param image: Image.
+    :param text: Text string to be drawn.
+    :param org: It is the coordinates of the bottom-left corner of the text string in the image.
+            The coordinates are represented as tuples of two values i.e. (X coordinate value, Y coordinate value).
+    :param fontFace: It denotes the font type. Some of font types are FONT_HERSHEY_SIMPLEX, FONT_HERSHEY_PLAIN.
+    :param fontScale: Font scale factor that is multiplied by the font-specific base size.
+    :param color: The sequence contains a three values. RGB.
+    :param thickness: Int. Text thickness value.
+    :return: None
+    """
+    cv2.putText(image, text, org, fontFace, fontScale, color, thickness)
