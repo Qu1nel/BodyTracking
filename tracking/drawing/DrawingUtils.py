@@ -1,5 +1,4 @@
 import dataclasses
-import math
 from typing import Tuple, Union, Mapping, List, Optional
 
 import cv2
@@ -13,6 +12,11 @@ RED = (0, 0, 255)
 GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
 
+__all__ = (
+    'DrawingSpec',
+    'draw_landmarks'
+)
+
 
 @dataclasses.dataclass
 class DrawingSpec(object):
@@ -22,13 +26,6 @@ class DrawingSpec(object):
     thickness: int = 1
     # Circle radius. Default to 1 pixel.
     circle_radius: int = 1
-
-
-def _normal_to_pix_coord(normal_x: float, normal_y: float, image_w: int, image_h: int) -> Tuple[int, int]:
-    """Converts normalized value pair to pixel coordinates."""
-    x_px = min(math.ceil(normal_x * image_w), image_w - 1)
-    y_px = min(math.ceil(normal_y * image_h), image_h - 1)
-    return x_px, y_px
 
 
 def draw_landmarks(

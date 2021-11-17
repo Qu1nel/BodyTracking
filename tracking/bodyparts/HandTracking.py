@@ -5,56 +5,37 @@ import mediapipe as mp
 import numpy as np
 from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 
-from DrawingUtils import _normal_to_pix_coord
+from .base_solution import Landmark, BaseSolution, _normalize_to_pixel_coordinates
+
+__all__ = (
+    'Hand',
+    'HandsDetector'
+)
 
 
-class Landmark(object):
-    __slots__ = ('x', 'y', '__sequence')
-
-    def __init__(self, x: int, y: int):
-        self.x = x
-        self.y = y
-        self.__sequence = (self.x, self.y)
-
-    def __getitem__(self, key):
-        return self.__sequence[key]
-
-    def __len__(self):
-        return len(self.__sequence)
-
-    def __str__(self):
-        return 'Landmark(x={} y={})'.format(self.x, self.y)
-
-    def __repr__(self):
-        return 'Landmark(x={} y={})'.format(self.x, self.y)
-
-
-class Hand(object):
-    __landmarks: dict
-
-    __slots__ = ('landmark_0', 'landmark_1', 'landmark_2', 'landmark_3', 'landmark_4',
-                 'landmark_5', 'landmark_6', 'landmark_7', 'landmark_8', 'landmark_9',
-                 'landmark_10', 'landmark_11', 'landmark_12', 'landmark_13', 'landmark_14',
-                 'landmark_15', 'landmark_16', 'landmark_17', 'landmark_18', 'landmark_19',
-                 'landmark_20', '__landmarks')
+class Hand(BaseSolution):
+    __slots__ = (
+        'landmark_0', 'landmark_1', 'landmark_2', 'landmark_3',
+        'landmark_4', 'landmark_5', 'landmark_6', 'landmark_7',
+        'landmark_8', 'landmark_9', 'landmark_10', 'landmark_11',
+        'landmark_12', 'landmark_13', 'landmark_14', 'landmark_15',
+        'landmark_16', 'landmark_17', 'landmark_18', 'landmark_19',
+        'landmark_20', '__landmarks'
+    )
 
     def __init__(self, source: NormalizedLandmarkList, image: np.ndarray):
-        self.__landmarks = dict()
+        super().__init__()
 
         image_rows, image_cols, _ = image.shape
         for idx, raw_lnd in enumerate(source.landmark):
-            landmark_px = _normal_to_pix_coord(raw_lnd.x, raw_lnd.y, image_cols, image_rows)
-            self.__landmarks[idx] = Landmark(*landmark_px)
+            landmark_px = _normalize_to_pixel_coordinates(raw_lnd.x, raw_lnd.y, image_cols, image_rows)
+            self.landmarks[idx] = Landmark(*landmark_px)
 
         self._init_points()
 
     def _init_points(self):
-        for name, value in zip(self.__slots__, self.__landmarks.values()):
+        for name, value in zip(self.__slots__, self.landmarks.values()):
             setattr(self, name, value)
-
-    @property
-    def landmarks(self):
-        return self.__landmarks
 
 
 class HandsDetector(object):
@@ -119,6 +100,6 @@ class HandsDetector(object):
     def __exit__(self, exc_type, exc_val, traceback):
         """A "with" statement support."""
         if exc_type is not None:
-            print(exc_type, exc_val, traceback)  # ['tb_frame', 'tb_lasti', 'tb_lineno', 'tb_next']
+            print(exc_type, exc_val, traceback)  # traceback.(tb_frame, tb_lasti, tb_lineno, tb_next)
             return False
         return self
