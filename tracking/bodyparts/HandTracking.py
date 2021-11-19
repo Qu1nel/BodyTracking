@@ -6,11 +6,9 @@ import numpy as np
 from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 
 from .base_solution import Landmark, BaseSolution, _normalize_to_pixel_coordinates
+from .base_solution import _RGB_CHANNELS
 
-__all__ = (
-    'Hand',
-    'HandsDetector'
-)
+__all__ = ('Hand', 'HandsDetector')
 
 
 class Hand(BaseSolution):
@@ -70,13 +68,15 @@ class HandsDetector(object):
         Args:
           image: An RGB image represented as a numpy ndarray.
 
-        Raises:
-          RuntimeError: If the underlying graph throws any error.
+        Raise:
           ValueError: If the input image is not three channel RGB.
 
         Returns:
           A list object that contains the hand landmarks on each detected hand.
         """
+        if image.shape[2] != _RGB_CHANNELS:
+            raise ValueError('Input image must contain three channel rgb data.')
+
         # writeable = False to improve performance
         image.flags.writeable = False
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

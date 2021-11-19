@@ -6,8 +6,7 @@ import numpy as np
 
 from .colors import *
 from ..bodyparts.base_solution import BaseSolution, _normalize_to_pixel_coordinates
-
-_RGB_CHANNELS = 3
+from ..bodyparts.base_solution import _RGB_CHANNELS
 
 __all__ = (
     'DrawingSpec',

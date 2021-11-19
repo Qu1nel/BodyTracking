@@ -2,6 +2,8 @@ import math
 from abc import abstractmethod
 from typing import Tuple
 
+_RGB_CHANNELS = 3
+
 
 class BaseSolution(object):
     __landmarks: dict
