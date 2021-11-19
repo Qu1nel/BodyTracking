@@ -28,7 +28,7 @@ def draw_landmarks(
         image: np.ndarray,
         landmark_list: Mapping,
         connections: Optional[List[Tuple[int, int]]] = None,
-        landmark_drawing_spec: Union[DrawingSpec, Mapping[int, DrawingSpec]] = DrawingSpec(color=RED, thickness=2),
+        landmark_drawing_spec: Union[DrawingSpec, Mapping[int, DrawingSpec]] = DrawingSpec(color=RED, thickness=-1),
         connection_drawing_spec: Union[DrawingSpec, Mapping[Tuple[int, int], DrawingSpec]] = DrawingSpec(color=GREEN),
         ignore_landmark: Union[List[int], Tuple[int]] = tuple(),
         *,
