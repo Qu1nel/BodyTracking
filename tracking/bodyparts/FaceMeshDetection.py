@@ -1,17 +1,32 @@
 from typing import List
 
+import cv2
 import mediapipe as mp
 import numpy as np
+from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 
-from .base_solution import BaseSolution
+from .base_solution import BaseSolution, Landmark, _normalize_to_pixel_coordinates
 from .base_solution import _RGB_CHANNELS
 
 __all__ = ('FaceMesh', 'FacesMeshDetector')
 
 
 class FaceMesh(BaseSolution):
+    __slots__ = (*['landmark_{}'.format(num) for num in range(0, 468)], '__landmarks')
+
+    def __init__(self, source: NormalizedLandmarkList, image: np.ndarray):
+        super().__init__()
+
+        image_rows, image_cols, _ = image.shape
+        for idx, raw_lnd in enumerate(source.landmark):
+            landmark_px = _normalize_to_pixel_coordinates(raw_lnd.x, raw_lnd.y, image_cols, image_rows)
+            self.landmarks[idx] = Landmark(*landmark_px)
+
+        self._init_points()
+
     def _init_points(self):
-        pass
+        for name, value in zip(self.__slots__, self.landmarks.values()):
+            setattr(self, name, value)
 
 
 class FacesMeshDetector(object):
@@ -49,7 +64,7 @@ class FacesMeshDetector(object):
         image.flags.writeable = False
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        raw_faces = self.__faces.process(image).multi_hand_landmarks
+        raw_faces = self.__faces.process(image).multi_face_landmarks
 
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         image.flags.writeable = True
