@@ -15,7 +15,7 @@ with FaceMeshDetection.FacesMeshDetector() as Face, HandTracking.HandsDetector(2
 
         if results_hands:
             for hand in results_hands:
-                DrawingUtils.draw_landmarks(image, hand, connections=connections.HandConnections.HAND_CONNECTIONS_V2)
+                DrawingUtils.draw_landmarks(image, hand, connections=connections.HandConnections.HAND_CONNECTIONS_V1)
 
         if results_faces:
             for face in results_faces:
