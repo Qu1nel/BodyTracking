@@ -20,10 +20,6 @@ All python dependencies specified in the file [requirements.txt](./requirements.
 
     pip install -r requirements.txt
 
-## Documentation
-
-...
-
 ## Developers
 
 - [Qu1nel](https://github.com/Qu1nel)
