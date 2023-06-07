@@ -118,7 +118,10 @@ def draw_detection(
         image: np.ndarray,
         detection: Face,
         landmark_drawing_spec: DrawingSpec = DrawingSpec(color=BLUE, circle_radius=3, thickness=-1),
-        bbox_drawing_spec: DrawingSpec = DrawingSpec(color=PURPLE)
+        bbox_drawing_spec: DrawingSpec = DrawingSpec(color=PURPLE),
+        *,
+        draw_landmark: bool = True,
+
 ):
     """Draws the detection bounding box and landmarks on the image.
 
@@ -133,6 +136,8 @@ def draw_detection(
         bbox_drawing_spec: A DrawingSpec object that specifies the bounding box's
             drawing settings such as color and line thickness.
 
+        draw_landmark: Flag indicating whether to draw dots on the image
+
     Raises:
         ValueError: If the input image is not 3 channel RGB.
     """
@@ -140,9 +145,11 @@ def draw_detection(
         raise ValueError('Input image must contain three channel rgb data.')
 
     image_rows, image_cols, _ = image.shape
-    for landmark in detection.landmarks.values():
-        cv2.circle(image, landmark, landmark_drawing_spec.circle_radius,
-                   landmark_drawing_spec.color, landmark_drawing_spec.thickness)
+
+    if draw_landmark:
+        for landmark in detection.landmarks.values():
+            cv2.circle(image, landmark, landmark_drawing_spec.circle_radius,
+                       landmark_drawing_spec.color, landmark_drawing_spec.thickness)
 
     # Draws bounding box if exists.
     box = detection.relative_bounding_box
