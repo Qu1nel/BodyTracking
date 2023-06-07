@@ -1,7 +1,7 @@
 import math
 from typing import Union, List, Tuple
 
-from src.tracking.bodyparts.base_solution import Landmark
+from tracking.bodyparts.base_solution import Landmark
 
 
 def find_distance(

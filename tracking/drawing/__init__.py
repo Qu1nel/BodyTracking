@@ -1,3 +1,3 @@
-from src.tracking.drawing import DrawingUtils
-from src.tracking.drawing import colors
-from src.tracking.drawing.drawing_tools import *
+from tracking.drawing import DrawingUtils
+from tracking.drawing import colors
+from tracking.drawing.drawing_tools import *

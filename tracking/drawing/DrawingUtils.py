@@ -4,9 +4,9 @@ from typing import Tuple, Union, Mapping, List, Optional
 import cv2
 import numpy as np
 
-from src.tracking.drawing.colors import *
-from src.tracking.bodyparts import base_solution
-from src.tracking.bodyparts.FaceDetection import Face
+from tracking.drawing.colors import *
+from tracking.bodyparts import base_solution
+from tracking.bodyparts.FaceDetection import Face
 
 __all__ = (
     'DrawingSpec',

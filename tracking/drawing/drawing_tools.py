@@ -3,8 +3,8 @@ from typing import Union, List, Tuple, Optional
 import cv2
 from numpy import ndarray
 
-from .colors import *
-from ..bodyparts.base_solution import Landmark
+from tracking.drawing.colors import *
+from tracking.bodyparts.base_solution import Landmark
 
 __doc__ = """Just redefined funcs)"""
 __all__ = (

@@ -5,10 +5,10 @@ import mediapipe as mp
 import numpy as np
 from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 
-from src.tracking.bodyparts.base_solution import BaseSolution
-from src.tracking.bodyparts.base_solution import LabelMixin
-from src.tracking.bodyparts.base_solution import ContextMixin
-from src.tracking.bodyparts.base_solution import RGB_CHANNELS
+from tracking.bodyparts.base_solution import BaseSolution
+from tracking.bodyparts.base_solution import LabelMixin
+from tracking.bodyparts.base_solution import ContextMixin
+from tracking.bodyparts.base_solution import RGB_CHANNELS
 
 __all__ = ('FaceMesh', 'FacesMeshDetector')
 
