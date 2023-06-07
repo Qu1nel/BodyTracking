@@ -31,17 +31,6 @@ class Face(BaseSolution, LabelMixin):
             height=source.relative_bounding_box.height
         )
 
-    def __str__(self):
-        return self.__repr__()
-
-    def __repr__(self):
-        part = (f'\n\txmin:{self.relative_bounding_box["xmin"]}\n'
-                f'\tymin:{self.relative_bounding_box["ymin"]}\n'
-                f'\twidth:{self.relative_bounding_box["width"]}\n'
-                f'\theight:{self.relative_bounding_box["height"]}\n\n')
-
-        return 'relative_bounding_box:' + part + 'landmarks:\n' + f'\t{self.landmarks}\n'
-
 
 class FacesDetector(ContextMixin):
     __face: mp.solutions.face_detection.FaceDetection

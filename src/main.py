@@ -24,11 +24,10 @@ def status_good(status: Any) -> bool:
 
 
 def main(source) -> None:
-    with FacesMeshDetector() as FaceMeshObj, \
-            HandsDetector(min_detection_confidence=0.7, min_tracking_confidence=0.2, max_num_hands=1) as HandObj, \
-            FacesDetector() as FaceObj:
+    with HandsDetector(min_detection_confidence=0.7, min_tracking_confidence=0.2, max_num_hands=2) as HandObj, \
+            FacesMeshDetector() as FaceMeshObj, FacesDetector() as FaceObj:
 
-        handler_objects = (FaceObj, HandObj) #, FaceMeshObj)
+        handler_objects = [HandObj, FaceObj, FaceMeshObj]
 
         while source.isOpened():
             status, image = camera.read()
@@ -54,6 +53,8 @@ def main(source) -> None:
 
                 elif label == 'face':
                     DrawingUtils.draw_detection(image, result)
+                else:
+                    raise RuntimeError
 
             cv2.imshow(TITLE_WINDOW, image)
 

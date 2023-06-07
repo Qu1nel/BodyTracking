@@ -14,7 +14,7 @@ __all__ = ('FaceMesh', 'FacesMeshDetector')
 
 
 class FaceMesh(BaseSolution, LabelMixin):
-    __slots__ = (*[f'landmark_{num}' for num in range(0, 468)], '__landmarks')
+    __slots__ = (*[f'landmark_{num}' for num in range(0, 468)], '__landmarks', 'name')
 
     def __init__(self, source: NormalizedLandmarkList, image: np.ndarray, label: Literal['face'] = 'facemesh'):
         BaseSolution.__init__(self, source, image)

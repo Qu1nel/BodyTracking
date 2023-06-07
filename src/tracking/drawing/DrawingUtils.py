@@ -117,8 +117,8 @@ def draw_landmarks(
 def draw_detection(
         image: np.ndarray,
         detection: Face,
-        landmark_drawing_spec: DrawingSpec = DrawingSpec(color=RED, circle_radius=2, thickness=-1),
-        bbox_drawing_spec: DrawingSpec = DrawingSpec(color=RED)
+        landmark_drawing_spec: DrawingSpec = DrawingSpec(color=BLUE, circle_radius=3, thickness=-1),
+        bbox_drawing_spec: DrawingSpec = DrawingSpec(color=PURPLE)
 ):
     """Draws the detection bounding box and landmarks on the image.
 

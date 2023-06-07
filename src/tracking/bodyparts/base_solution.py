@@ -11,9 +11,11 @@ RGB_CHANNELS = 3
 
 
 class BaseSolution:
-    __landmarks: dict = dict()
+    __landmarks: dict
 
     def __init__(self, source: Union[NormalizedLandmarkList, LocationData], image: np.ndarray):
+        self.__landmarks = dict()
+
         if isinstance(source, NormalizedLandmarkList):
             mask = source.landmark
         elif isinstance(source, LocationData):
