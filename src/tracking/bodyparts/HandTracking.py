@@ -1,81 +1,79 @@
-from typing import List
+from typing import List, Literal
 
 import cv2
 import mediapipe as mp
 import numpy as np
 from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 
-from .base_solution import Landmark, BaseSolution, _normalize_to_pixel_coordinates
-from .base_solution import _RGB_CHANNELS
+from src.tracking.bodyparts.base_solution import BaseSolution
+from src.tracking.bodyparts.base_solution import LabelMixin
+from src.tracking.bodyparts.base_solution import ContextMixin
+from src.tracking.bodyparts.base_solution import RGB_CHANNELS
 
 __all__ = ('Hand', 'HandsDetector')
 
 
-class Hand(BaseSolution):
+class Hand(BaseSolution, LabelMixin):
     __slots__ = (
         'landmark_0', 'landmark_1', 'landmark_2', 'landmark_3',
         'landmark_4', 'landmark_5', 'landmark_6', 'landmark_7',
         'landmark_8', 'landmark_9', 'landmark_10', 'landmark_11',
         'landmark_12', 'landmark_13', 'landmark_14', 'landmark_15',
         'landmark_16', 'landmark_17', 'landmark_18', 'landmark_19',
-        'landmark_20', '__landmarks'
+        'landmark_20', '__landmarks', 'name'
     )
 
-    def __init__(self, source: NormalizedLandmarkList, image: np.ndarray):
-        super().__init__()
-
-        image_rows, image_cols, _ = image.shape
-        for idx, raw_lnd in enumerate(source.landmark):
-            landmark_px = _normalize_to_pixel_coordinates(raw_lnd.x, raw_lnd.y, image_cols, image_rows)
-            self.landmarks[idx] = Landmark(*landmark_px)
-
-        self._init_points()
-
-    def _init_points(self):
-        for name, value in zip(self.__slots__, self.landmarks.values()):
-            setattr(self, name, value)
+    def __init__(self, source: NormalizedLandmarkList, image: np.ndarray, label: Literal['face'] = 'hand'):
+        BaseSolution.__init__(self, source, image)
+        LabelMixin.__init__(self, label)
 
 
-class HandsDetector(object):
-    max_num_hands: int
-    min_tracking_confidence: float
-    min_detection_confidence: float
+class HandsDetector(ContextMixin):
+    __hand: mp.solutions.hands.Hands
 
-    __slots__ = '__hand'
-
-    def __init__(self, max_num_hands=1, min_detection_confidence=0.5, min_tracking_confidence=0.5):
-        """Args:
-          static_image_mode: Whether to treat the input images as a batch of static
-            and possibly unrelated images, or a video stream. See details in
-            https://solutions.mediapipe.dev/hands#static_image_mode.
-          max_num_hands: Maximum number of hands to detect. See details in
-            https://solutions.mediapipe.dev/hands#max_num_hands.
-          min_detection_confidence: Minimum confidence value ([0.0, 1.0]) for hand
-            detection to be considered successful. See details in
-            https://solutions.mediapipe.dev/hands#min_detection_confidence.
-          min_tracking_confidence: Minimum confidence value ([0.0, 1.0]) for the
-            hand landmarks to be considered tracked successfully. See details in
-            https://solutions.mediapipe.dev/hands#min_tracking_confidence.
-        """
-        self.__hand = mp.solutions.hands.Hands(max_num_hands=max_num_hands,
-                                               min_detection_confidence=min_detection_confidence,
-                                               min_tracking_confidence=min_tracking_confidence)
-
-    def process(self, image: np.ndarray) -> List:
-        """Converts the image from BGR to RGB, then processes an RGB image and returns the hand
-            landmarks and handedness of each detected hand.Returns the image in BGR after processing.
+    def __init__(
+            self,
+            max_num_hands: int = 1,
+            min_detection_confidence: float = 0.5,
+            min_tracking_confidence: float = 0.5,
+    ):
+        """Init method for HandDetector.
 
         Args:
-          image: An RGB image represented as a numpy ndarray.
+            max_num_hands: Maximum number of hands to detect. See details in
+                https://solutions.mediapipe.dev/hands#max_num_hands.
+
+            min_detection_confidence: Minimum confidence value ([0.0, 1.0])
+                for hand detection to be considered successful. See details in
+                https://solutions.mediapipe.dev/hands#min_detection_confidence.
+
+            min_tracking_confidence: Minimum confidence value ([0.0, 1.0])
+                for the hand landmarks to be considered tracked successfully.
+                See details in https://solutions.mediapipe.dev/hands#min_tracking_confidence.
+        """
+        self.__hand = mp.solutions.hands.Hands(
+            max_num_hands=max_num_hands,
+            min_detection_confidence=min_detection_confidence,
+            min_tracking_confidence=min_tracking_confidence
+        )
+
+    def process(self, image: np.ndarray) -> List[Hand]:
+        """Converts the image from BGR to RGB, then processes an RGB image and returns the hand landmarks.
+
+        Returns the image in BGR after processing.
+
+        Args:
+            image: An RGB image represented as a numpy ndarray.
 
         Raise:
-          ValueError: If the input image is not three channel RGB.
+            ValueError: If the input image is not three channel RGB.
 
         Returns:
-          A list object that contains the hand landmarks on each detected hand.
+            A list object that contains the hand landmarks on each detected hand.
         """
-        if image.shape[2] != _RGB_CHANNELS:
-            raise ValueError('Input image must contain three channel rgb data.')
+
+        if image.shape[2] != RGB_CHANNELS:
+            raise ValueError('Input image must contain 3 channels RGB data.')
 
         # writeable = False to improve performance
         image.flags.writeable = False
@@ -92,14 +90,3 @@ class HandsDetector(object):
                 results.append(Hand(raw_hand, image))
 
         return results
-
-    def __enter__(self):
-        """A "with" statement support."""
-        return self
-
-    def __exit__(self, exc_type, exc_val, traceback):
-        """A "with" statement support."""
-        if exc_type is not None:
-            print(exc_type, exc_val, traceback)  # traceback.(tb_frame, tb_lasti, tb_lineno, tb_next)
-            return False
-        return self

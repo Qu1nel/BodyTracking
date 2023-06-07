@@ -1,12 +1,12 @@
-import dataclasses
+from dataclasses import dataclass
 from typing import Tuple, Union, Mapping, List, Optional
 
 import cv2
 import numpy as np
 
-from .colors import *
-from ..bodyparts.base_solution import BaseSolution, _normalize_to_pixel_coordinates
-from ..bodyparts.base_solution import _RGB_CHANNELS
+from src.tracking.drawing.colors import *
+from src.tracking.bodyparts import base_solution
+from src.tracking.bodyparts.FaceDetection import Face
 
 __all__ = (
     'DrawingSpec',
@@ -14,8 +14,8 @@ __all__ = (
 )
 
 
-@dataclasses.dataclass
-class DrawingSpec(object):
+@dataclass
+class DrawingSpec:
     # Color for drawing the annotation. Default to the white color.
     color: Tuple[int, int, int] = WHITE
     # Thickness for drawing the annotation. Default to 1 pixel.
@@ -26,10 +26,15 @@ class DrawingSpec(object):
 
 def draw_landmarks(
         image: np.ndarray,
-        landmark_list: Mapping,
+        landmark_list: base_solution.BaseSolution,
         connections: Optional[List[Tuple[int, int]]] = None,
-        landmark_drawing_spec: Union[DrawingSpec, Mapping[int, DrawingSpec]] = DrawingSpec(color=RED, thickness=-1),
-        connection_drawing_spec: Union[DrawingSpec, Mapping[Tuple[int, int], DrawingSpec]] = DrawingSpec(color=GREEN),
+        landmark_drawing_spec: Union[DrawingSpec, Mapping[int, DrawingSpec]] = DrawingSpec(
+            color=RED,
+            thickness=-1
+        ),
+        connection_drawing_spec: Union[DrawingSpec, Mapping[Tuple[int, int], DrawingSpec]] = DrawingSpec(
+            color=GREEN
+        ),
         ignore_landmark: Union[List[int], Tuple[int]] = tuple(),
         *,
         smart_drawing: bool = False
@@ -37,40 +42,46 @@ def draw_landmarks(
     """Draws the landmarks and the connections on the image.
 
     Args:
-      image: A three channel RGB image represented as numpy ndarray.
-      landmark_list: A normalized landmark list proto message to be annotated on
-        the image.
-      connections: A list of landmark index tuples that specifies how landmarks to
-        be connected in the drawing.
-      landmark_drawing_spec: Either a DrawingSpec object or a mapping from
-        hand landmarks to the DrawingSpecs that specifies the landmarks' drawing
-        settings such as color, line thickness, and circle radius.
-        If this argument is explicitly set to None, no landmarks will be drawn.
-      connection_drawing_spec: Either a DrawingSpec object or a mapping from
-        hand connections to the DrawingSpecs that specifies the
-        connections' drawing settings such as color and line thickness.
-        If this argument is explicitly set to None, no landmark connections will
-        be drawn.
-      ignore_landmark: A sequence of landmarks that will be skipped during drawing.
-      smart_drawing: A flag that meaning drawing only those landmarks that are in the
-        sequence connections.
+        image: A three channel RGB image represented as numpy ndarray.
+
+        landmark_list: A normalized landmark list proto message to be annotated on
+            the image.
+
+        connections: A list of landmark index tuples that specifies how landmarks to
+            be connected in the drawing.
+
+        landmark_drawing_spec: Either a DrawingSpec object or a mapping from
+            hand landmarks to the DrawingSpecs that specifies the landmarks' drawing
+            settings such as color, line thickness, and circle radius.
+            If this argument is explicitly set to None, no landmarks will be drawn.
+
+        connection_drawing_spec: Either a DrawingSpec object or a mapping from
+            hand connections to the DrawingSpecs that specifies the
+            connections' drawing settings such as color and line thickness.
+            If this argument is explicitly set to None, no landmark connections will
+            be drawn.
+
+        ignore_landmark: A sequence of landmarks that will be skipped during drawing.
+
+        smart_drawing: A flag that meaning drawing only those landmarks that are in the
+            sequence connections.
 
     Raises:
-      ValueError: If one of the followings:
-        a) If the input image is not three channel RGB.
-        b) If any connetions contain invalid landmark index.
+        ValueError: If one of the followings:
+            a) If the input image is not 3 channel RGB.
+            b) If any connections contain invalid landmark index.
     """
+
     if not landmark_list:
         return None
-    if image.shape[2] != _RGB_CHANNELS:
-        raise ValueError('Input image must contain three channel rgb data.')
+    if image.shape[2] != base_solution.RGB_CHANNELS:
+        raise ValueError('Input image must contain 3 channel rgb data.')
 
     image_rows, image_cols, _ = image.shape
     idx_to_coordinates = landmark_list.landmarks
+    num_landmarks = len(landmark_list.landmarks)
 
     if connections:
-        num_landmarks = len(landmark_list.landmarks)
-
         for connection in connections:
             start_idx, end_idx = connection[0], connection[1]
 
@@ -105,23 +116,27 @@ def draw_landmarks(
 
 def draw_detection(
         image: np.ndarray,
-        detection: BaseSolution,
+        detection: Face,
         landmark_drawing_spec: DrawingSpec = DrawingSpec(color=RED, circle_radius=2, thickness=-1),
-        bbox_drawing_spec: DrawingSpec = DrawingSpec(color=RED)):
+        bbox_drawing_spec: DrawingSpec = DrawingSpec(color=RED)
+):
     """Draws the detection bounding box and landmarks on the image.
 
     Args:
-      image: A three channel RGB image represented as numpy ndarray.
-      detection: A detection proto message to be annotated on the image.
-      landmark_drawing_spec: A DrawingSpec object that specifies the landmarks'
-        drawing settings such as color, line thickness, and circle radius.
-      bbox_drawing_spec: A DrawingSpec object that specifies the bounding box's
-        drawing settings such as color and line thickness.
+        image: A three channel RGB image represented as numpy ndarray.
+
+        detection: A detection proto message to be annotated on the image.
+
+        landmark_drawing_spec: A DrawingSpec object that specifies the landmarks'
+            drawing settings such as color, line thickness, and circle radius.
+
+        bbox_drawing_spec: A DrawingSpec object that specifies the bounding box's
+            drawing settings such as color and line thickness.
 
     Raises:
-      ValueError: If the input image is not three channel RGB.
+        ValueError: If the input image is not 3 channel RGB.
     """
-    if image.shape[2] != _RGB_CHANNELS:
+    if image.shape[2] != base_solution.RGB_CHANNELS:
         raise ValueError('Input image must contain three channel rgb data.')
 
     image_rows, image_cols, _ = image.shape
@@ -131,10 +146,10 @@ def draw_detection(
 
     # Draws bounding box if exists.
     box = detection.relative_bounding_box
-    rect_start_point = _normalize_to_pixel_coordinates(
+    rect_start_point = base_solution.normalize_to_pixel_coordinates(
         box['xmin'], box['ymin'], image_cols, image_rows
     )
-    rect_end_point = _normalize_to_pixel_coordinates(
+    rect_end_point = base_solution.normalize_to_pixel_coordinates(
         box['xmin'] + box['width'], box['ymin'] + box['height'], image_cols, image_rows
     )
 

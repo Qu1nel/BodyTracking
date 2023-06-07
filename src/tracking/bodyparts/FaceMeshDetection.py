@@ -1,63 +1,85 @@
-from typing import List
+from typing import List, Literal
 
 import cv2
 import mediapipe as mp
 import numpy as np
 from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 
-from .base_solution import BaseSolution, Landmark, _normalize_to_pixel_coordinates
-from .base_solution import _RGB_CHANNELS
+from src.tracking.bodyparts.base_solution import BaseSolution
+from src.tracking.bodyparts.base_solution import LabelMixin
+from src.tracking.bodyparts.base_solution import ContextMixin
+from src.tracking.bodyparts.base_solution import RGB_CHANNELS
 
 __all__ = ('FaceMesh', 'FacesMeshDetector')
 
 
-class FaceMesh(BaseSolution):
-    __slots__ = (*['landmark_{}'.format(num) for num in range(0, 468)], '__landmarks')
+class FaceMesh(BaseSolution, LabelMixin):
+    __slots__ = (*[f'landmark_{num}' for num in range(0, 468)], '__landmarks')
 
-    def __init__(self, source: NormalizedLandmarkList, image: np.ndarray):
-        super().__init__()
-
-        image_rows, image_cols, _ = image.shape
-        for idx, raw_lnd in enumerate(source.landmark):
-            landmark_px = _normalize_to_pixel_coordinates(raw_lnd.x, raw_lnd.y, image_cols, image_rows)
-            self.landmarks[idx] = Landmark(*landmark_px)
-
-        self._init_points()
-
-    def _init_points(self):
-        for name, value in zip(self.__slots__, self.landmarks.values()):
-            setattr(self, name, value)
+    def __init__(self, source: NormalizedLandmarkList, image: np.ndarray, label: Literal['face'] = 'facemesh'):
+        BaseSolution.__init__(self, source, image)
+        LabelMixin.__init__(self, label)
 
 
-class FacesMeshDetector(object):
-    static_image_mode: bool
-    max_num_faces: int
-    refine_landmarks: bool
-    min_detection_confidence: float
-    min_tracking_confidence: float
+class FacesMeshDetector(ContextMixin):
+    __faces: mp.solutions.face_mesh.FaceMesh
 
-    __slots__ = '__faces'
-
-    def __init__(self, static_image_mode=False, max_num_faces=1, refine_landmarks=False,
-                 min_detection_confidence=0.5, min_tracking_confidence=0.5):
-        self.__faces = mp.solutions.face_mesh.FaceMesh(
-            static_image_mode, max_num_faces, refine_landmarks, min_detection_confidence, min_tracking_confidence
-        )
-
-    def process(self, image: np.ndarray) -> List:
-        """Converts the image from BGR to RGB, then processes an RGB image and returns the face
-            landmarks and handedness of each detected face.Returns the image in BGR after processing.
+    def __init__(
+            self,
+            static_image_mode=False,
+            max_num_faces=1,
+            refine_landmarks=False,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5,
+    ):
+        """Init method for FaceMeshDetector.
 
         Args:
-          image: An RGB image represented as a numpy ndarray.
+            static_image_mode: Whether to treat the input images as a batch of static
+                and possibly unrelated images, or a video stream. See details in
+                https://solutions.mediapipe.dev/face_mesh#static_image_mode.
+
+            max_num_faces: Maximum number of faces to detect. See details in
+                https://solutions.mediapipe.dev/face_mesh#max_num_faces.
+
+            refine_landmarks: Whether to further refine the landmark coordinates
+                around the eyes and lips, and output additional landmarks around the
+                irises. Default to False. See details in
+                https://solutions.mediapipe.dev/face_mesh#refine_landmarks.
+
+            min_detection_confidence: Minimum confidence value ([0.0, 1.0]) for face
+                detection to be considered successful. See details in
+                https://solutions.mediapipe.dev/face_mesh#min_detection_confidence.
+
+            min_tracking_confidence: Minimum confidence value ([0.0, 1.0]) for the
+                face landmarks to be considered tracked successfully. See details in
+                https://solutions.mediapipe.dev/face_mesh#min_tracking_confidence.
+        """
+        self.__faces = mp.solutions.face_mesh.FaceMesh(
+            static_image_mode=static_image_mode,
+            max_num_faces=max_num_faces,
+            refine_landmarks=refine_landmarks,
+            min_detection_confidence=min_detection_confidence,
+            min_tracking_confidence=min_tracking_confidence
+
+        )
+
+    def process(self, image: np.ndarray) -> List[FaceMesh]:
+        """Converts the image from BGR to RGB, then processes an RGB image and returns the face landmarks.
+
+        Returns the image in BGR after processing.
+
+        Args:
+            image: An RGB image represented as a numpy ndarray.
 
         Raises:
-          ValueError: If the input image is not three channel RGB.
+            ValueError: If the input image is not three channel RGB.
 
         Returns:
-          A list object that contains the face landmarks on each detected face.
+            A list object that contains the face landmarks on each detected face.
         """
-        if image.shape[2] != _RGB_CHANNELS:
+
+        if image.shape[2] != RGB_CHANNELS:
             raise ValueError('Input image must contain three channel rgb data.')
 
         # writeable = False to improve performance
@@ -75,14 +97,3 @@ class FacesMeshDetector(object):
                 results.append(FaceMesh(raw_face, image))
 
         return results
-
-    def __enter__(self):
-        """A "with" statement support."""
-        return self
-
-    def __exit__(self, exc_type, exc_val, traceback):
-        """A "with" statement support."""
-        if exc_type is not None:
-            print(exc_type, exc_val, traceback)  # traceback.(tb_frame, tb_lasti, tb_lineno, tb_next)
-            return False
-        return self

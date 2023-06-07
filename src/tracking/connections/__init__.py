@@ -1,2 +1,2 @@
-from . import FaceConnections
-from . import HandConnections
+from src.tracking.connections import FaceConnections
+from src.tracking.connections import HandConnections

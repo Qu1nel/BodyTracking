@@ -1,3 +1,3 @@
-from . import FaceDetection
-from . import FaceMeshDetection
-from . import HandTracking
+from src.tracking.bodyparts import FaceDetection
+from src.tracking.bodyparts import FaceMeshDetection
+from src.tracking.bodyparts import HandTracking

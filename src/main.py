@@ -1,29 +1,84 @@
+from typing import Any, Union, List
+
 import cv2
 
-from tracking import *
+import tracking.connections as connections
 
-camera = cv2.VideoCapture(0)
-with FaceMeshDetection.FacesMeshDetector() as Face, HandTracking.HandsDetector(2) as Hand:
-    while camera.isOpened():
-        status, image = camera.read()
-        if not status:
-            print("Ignoring empty camera frame.")
-            break
+from tracking import DrawingUtils
+from tracking.bodyparts.HandTracking import HandsDetector, Hand
+from tracking.bodyparts.FaceMeshDetection import FacesMeshDetector, FaceMesh
+from tracking.bodyparts.FaceDetection import FacesDetector, Face
+from tracking.bodyparts.base_solution import LabelMixin
 
-        results_faces = Face.process(image)
-        results_hands = Hand.process(image)
+TITLE_WINDOW = 'Tracking'
+DEFAULT_HAND_CONNECTIONS = connections.HandConnections.HAND_CONNECTIONS_V2
+DEFAULT_FACEMESH_TESSELATION = connections.FaceConnections.FACEMESH_TESSELATION
 
-        if results_hands:
-            for hand in results_hands:
-                DrawingUtils.draw_landmarks(image, hand, connections=connections.HandConnections.HAND_CONNECTIONS_V1)
 
-        if results_faces:
-            for face in results_faces:
-                DrawingUtils.draw_landmarks(image, face, connections=connections.FaceConnections.FACEMESH_TESSELATION)
+def pressed_exit() -> bool:
+    return cv2.waitKey(1) == 27 or not cv2.getWindowProperty(TITLE_WINDOW, cv2.WND_PROP_VISIBLE)
 
-        cv2.imshow(name_window := 'SOME NAME', image)
 
-        if cv2.waitKey(1) == 27 or not cv2.getWindowProperty(name_window, cv2.WND_PROP_VISIBLE):
-            break
+def status_good(status: Any) -> bool:
+    return bool(status)
 
-cv2.destroyAllWindows()
+
+def main(source) -> None:
+    with FacesMeshDetector() as FaceMeshObj, \
+            HandsDetector(min_detection_confidence=0.7, min_tracking_confidence=0.2, max_num_hands=1) as HandObj, \
+            FacesDetector() as FaceObj:
+
+        handler_objects = (FaceObj, HandObj) #, FaceMeshObj)
+
+        while source.isOpened():
+            status, image = camera.read()
+
+            if not status_good(status):
+                print("Ignoring empty camera frame.")
+                break
+
+            result_processing: List[Union[Hand, Face, FaceMesh, LabelMixin]] = [
+                entity for obj in handler_objects for entity in obj.process(image)
+            ]
+
+            for result in result_processing:
+                label = result.name
+
+                if label in ('hand', 'facemesh'):
+                    if label == 'hand':
+                        connection = DEFAULT_HAND_CONNECTIONS
+                    elif label == 'facemesh':
+                        connection = DEFAULT_FACEMESH_TESSELATION
+
+                    DrawingUtils.draw_landmarks(image, result, connections=connection)
+
+                elif label == 'face':
+                    DrawingUtils.draw_detection(image, result)
+
+            cv2.imshow(TITLE_WINDOW, image)
+
+            if pressed_exit():
+                break
+
+
+if __name__ == '__main__':
+    try:
+        camera = cv2.VideoCapture(0)
+        main(source=camera)
+    except Exception as exc:
+        import sys
+
+        line_number = exc.__traceback__.tb_lineno
+        file = exc.__traceback__.tb_frame.f_code.co_filename
+        error = exc.__repr__()
+
+        sys.stderr.write(
+            "An unexpected error has occurred! Details:\n"
+            f"\tfile: {file}\n"
+            f"\tline: {line_number}\n"
+            f"\terror: {error}\n\n"
+        )
+
+        raise exc from None
+    finally:
+        cv2.destroyAllWindows()
