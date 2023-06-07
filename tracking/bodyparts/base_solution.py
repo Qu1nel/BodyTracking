@@ -46,9 +46,9 @@ class BaseSolution:
 
 
 class LabelMixin:
-    name: Literal['hand', 'facemesh', 'face']
+    name: Literal['hand', 'facemesh', 'face', 'pose']
 
-    def __init__(self, name: Literal['hand', 'facemesh', 'face']):
+    def __init__(self, name: Literal['hand', 'facemesh', 'face', 'pose']):
         self.name = name
 
 
