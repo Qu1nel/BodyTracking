@@ -8,9 +8,11 @@
    <img src="https://img.shields.io/github/license/Qu1nel/BodyTracking?color=g" alt="License" />
 </p>
 
+
 ## About BodyTracking
 
 Wrapper module over `mediapipe`. Easy to use.
+
 
 ## Requirements
 
@@ -20,9 +22,23 @@ All python dependencies specified in the file [requirements.txt](./requirements.
 
     pip install -r requirements.txt
 
+## Getting Started
+
+Run [`main.py`](./main.py) using the python interpreter
+
+### Windows
+
+    python main.py
+
+### Linux
+
+    python3 main.py
+
+
 ## Developers
 
 - [Qu1nel](https://github.com/Qu1nel)
+
 
 ## License
 
