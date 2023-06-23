@@ -26,9 +26,12 @@ def status_good(status: Any) -> bool:
 
 
 def main(source) -> None:
-    with HandsDetector(min_detection_confidence=0.7, min_tracking_confidence=0.2, max_num_hands=2) as HandObj, \
-            FacesMeshDetector() as FaceMeshObj, FacesDetector() as FaceObj, PoseDetector() as PoseObj:
-
+    with (
+        HandsDetector(min_detection_confidence=0.7, min_tracking_confidence=0.2, max_num_hands=2) as HandObj,
+        FacesMeshDetector() as FaceMeshObj,
+        FacesDetector() as FaceObj,
+        PoseDetector() as PoseObj
+    ):
         handler_objects = [HandObj, FaceObj, PoseObj, FaceMeshObj]
 
         while source.isOpened():
